@@ -1,31 +1,34 @@
 from random import randint
 
+from random import shuffle
 
 class Deck:
+    """Represents a deck of playing cards with functionalities to draw cards."""
     def __init__(self):
-        self.new_cards()
+        self.cards = []
+        self.initialize_deck()
 
-    def new_cards(self):
-        self.cards = Cards()
+    def initialize_deck(self):
+        """Populates a standard deck of cards and shuffles them."""
+        suits = ["Clubs", "Hearts", "Diamonds", "Spades"]
+        values = list(range(2, 11)) + ["J", "Q", "K", "Ace"]
+        self.cards = [Card(str(value), suit) for suit in suits for value in values]
+        shuffle(self.cards)  # Shuffle deck on initialization
 
-    def get_card(self):
-        # if len(self.cards.list) < 2:
-        #     self.new_cards()
-        #     print("new deck of cards")
-        if len(self.cards.list) < 1:
-            raise Exception("cards finished")
-        random_int = randint(0, len(self.cards.list) - 1)
-        random_card = self.cards.list.__getitem__(random_int)
-        self.cards.list.pop(random_int)
-        return random_card
-
+    def draw_card(self):
+        """Draws a card from the deck if available; otherwise, raises an exception."""
+        if not self.cards:
+            raise Exception("No more cards in the deck.")
+        return self.cards.pop()
 
 class Card:
-    def __init__(self, number, suit):
+    """Represents a single playing card with a number and suit."""
+    def __init__(self, number=None, suit=None):
         self.number = number
         self.suit = suit
 
     def value(self):
+        """Returns the value of the card for some games based on its number."""
         if isinstance(self.number, int):
             return self.number
         elif self.number == "Ace":
@@ -34,57 +37,45 @@ class Card:
             return 10
 
     def __str__(self):
-        return (f"{self.number} {self.suit}")
-
-    def __add__(self, other):
-        return self.value() + other.value()
-
-
+        return f"{self.number} of {self.suit}"
 
 class Cards:
+    """Collection of playing cards."""
     def __init__(self):
         self.list = []
-        self.suits = ["♣ Clubs", "♥ Hearts", "♦ Diamonds", "♠ Spades"]
+        self.suits = ["Clubs", "Hearts", "Diamonds", "Spades"]
+        self.initialize_deck()
+
+    def initialize_deck(self):
+        """Populates a standard deck of cards."""
         for suit in self.suits:
             for i in range(2, 11):
                 self.list.append(Card(i, suit))
             for j in ["J", "Q", "K", "Ace"]:
                 self.list.append(Card(j, suit))
 
-
 class Player:
+    """Represents a player in the game, capable of drawing and holding cards."""
     def __init__(self):
         self.drawn = []
 
-    def draw(self, card: Card):
+    def draw(self, card):
+        """Adds a card to the player's current hand."""
         self.drawn.append(card)
 
     def sum(self):
-        sum = 0
-        for i in self.drawn:
-            sum = i.value() + sum
-        print(sum)
-        return sum
+        """Calculates and returns the sum of values of drawn cards."""
+        return sum(card.value() for card in self.drawn)
 
     def reset(self):
+        """Resets the player's hand to empty."""
         self.drawn = []
 
+    def show_hand(self):
+        """Displays the hand of the player."""
+        return ', '.join(str(card) for card in self.drawn)
 
-class Hand:
-    def __init__(self, player1: Player, player2: Player):
-        self.player1 = player1
-        self.player2 = player2
-
-    def result(self):
-        if self.player1.sum() > self.player2.sum():
-            if self.player1.sum() <= 21:
-                print("player 1 wins")
-        elif self.player1.sum() < self.player2.sum():
-            if self.player2.sum() <= 21:
-                print("player 2 wins")
-        else:
-            print("draw")
-
-        self.player1.reset()
-        self.player2.reset()
+    def count_trump_cards(self, trump_suit):
+        """Counts how many trump suit cards the player has."""
+        return sum(1 for card in self.drawn if card.suit == trump_suit)
 
